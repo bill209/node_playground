@@ -30,7 +30,6 @@ function readItems2(){
 			list.push(childData.item);
 			console.log('childData: ', childData);
 		});
-console.log('list: ',list);
 			process.exit(0);
 	});
 }	
