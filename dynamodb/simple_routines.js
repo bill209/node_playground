@@ -132,3 +132,20 @@ function scan(){
 	});
 }
 
+// update an item
+var params = {
+    TableName:"todoTbl",
+    Key:{
+        "idx": 0
+    },
+    UpdateExpression: "set lastIdx = :n",
+    ExpressionAttributeValues:{
+        ":n":2
+    },
+    ReturnValues:"UPDATED_NEW"
+};
+
+docClient.update(params, function(err, data) {
+    if (err) ppJson(err); // an error occurred
+    else ppJson(data); // successful response
+});

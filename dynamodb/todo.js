@@ -1,4 +1,5 @@
 // arn:aws:dynamodb:ddblocal:000000000000:table/todoTb
+
 	var Q = require('q');
 
 	var dynDBConfig = {
@@ -17,6 +18,7 @@
 	var dbConfig = {"endpoint": new AWS.Endpoint("http://localhost:8000")};
 
 	// provide your configurations
+	AWS.config.update({accessKeyId: 'foo', secretAccessKey: 'barn'});
 	AWS.config.update(dynDBConfig);
 	// initialize DynamoDB Object.
 	var dynamoDB = new AWS.DynamoDB(dbConfig);
@@ -24,9 +26,11 @@
 
 console.log("\n\ngo\n");
 
-addTodo().then(function(res){
-	console.log('res: ', res);
-});
+console.log(getIdx());
+
+// addTodo().then(function(res){
+// 	console.log('res: ', res);
+// });
 
 
 // getTodos().then(function(res){
@@ -85,13 +89,68 @@ function getTodos(){
 	return deferred.promise;
 }
 
-function guid() {
-  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-    s4() + '-' + s4() + s4() + s4();
+function getIdx(callback){
+	var params = {
+		TableName: 'todoTbl',
+		Key: { 
+			idx: 0
+		}
+	};
+	docClient.get(params, function(err, data) {
+		callback(null, data.Item.lastIdx);
+	});
 }
 
-function s4() {
-  return Math.floor((1 + Math.random()) * 0x10000)
-    .toString(16)
-    .substring(1);
+function updateIdx(idx, callback){
+	var params = {
+		TableName: 'todoTbl',
+		Item: {
+			idx: 0,
+			lastIdx: idx + 1 
+		}
+	};
+	docClient.put(params, function(err, data) {
+		cback(err, data);
+	});
 }
+
+function getIdxAtomically(){
+	var params = {
+		TableName:"todoTbl",
+		Key:{
+			"idx": 0
+		},
+		UpdateExpression: "set lastIdx = lastIdx + :val",
+		ExpressionAttributeValues:{
+			":val":1
+		},
+		ReturnValues:"UPDATED_NEW"
+	};
+
+	console.log("Updating the item...");
+	docClient.update(params, function(err, data) {
+		if (err) {
+			console.error("Unable to update item. Error JSON:", err);
+			return {'error' : 'error in getLastIdx: ' + err };
+		} else {
+			console.log("UpdateItem succeeded:", data);
+			return data.Attributes.lastIdx;
+		}
+	});
+}
+
+var tasks=[];
+tasks.push(function(callback){ getIdx(callback);});
+tasks.push(function(callback){ updateIdx(idx, callback);});
+
+async.waterfall(tasks,
+	function(e,r){
+		if(e){
+			console.log('e: ',e);
+		} else{
+			for(var i=0;i<r.length;i++){
+				console.log(i + ': ', r[i]);
+			}
+		}
+	}
+);
