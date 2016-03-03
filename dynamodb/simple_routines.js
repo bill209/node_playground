@@ -5,7 +5,7 @@
 // requires async
 
 
-
+	var TABLENAME = 'todoTbl';
 	var dynDBConfig = {
 	"accessKeyId": "DummyKeyForLocaldynamoDB",
 	"secretAccessKey": "DummySecretAccessKeyForLocaldynamoDB",
@@ -22,19 +22,19 @@
 	// provide your configurations
 	AWS.config.update(dynDBConfig);
 	// initialize dynamoDB Object.
-	var dynamoDB = new AWS.dynamoDB(dbConfig);
-
+	var dynamoDB = new AWS.DynamoDB(dbConfig);
+	var docClient = new AWS.DynamoDB.DocumentClient();
 
 /* work area */
-scan();
+listTables();
 /* --------- */
 
 
 // create a table
-function createTable(params){
-	/*  params format
+function createTable(){
+	//params format
 	var params = {
-		TableName : "table_name",
+		TableName : 'newTable',
 		KeySchema: [
 			{ AttributeName: "index_name", KeyType: "HASH" },  //Partition key
 		],
@@ -46,13 +46,10 @@ function createTable(params){
 			WriteCapacityUnits: 1
 		}
 	};
-	*/
 
 	dynamoDB.createTable(params, function(err, data) {
-		if (err)
-			console.log(JSON.stringify(err, null, 2));
-		else
-			console.log(JSON.stringify(data, null, 2));
+		if (err) console.log(err);
+		else console.log(data);
 	});
 }
 
@@ -65,25 +62,27 @@ function listTables(){
 }
 
 // add single item to the table
-var params = {
-	TableName: 'todoTbl',
-	Item: { // a map of attribute name to AttributeValue
+function put(){
+	var params = {
+		TableName: 'todoTbl',
+		Item: { // a map of attribute name to AttributeValue
 
-		idx: 4,
-		todoItem: "mop the floor"
-	}
-};
-dynamoDB.put(params, function(err, data) {
-	if (err) ppJson(err); // an error occurred
-	else ppJson(data); // successful response
-});
+			idx: 4,
+			todoItem: "mop the floor"
+		}
+	};
+	docClient.put(params, function(err, data) {
+			if (err) console.log(err);
+			else console.log(data);
+	});
+}
 
 // add multiple items to a table
 function batchWrite(items){
 	/* items format
 		items = {
 			RequestItems: {
-				"table_name": [ {
+				TABLENAME: [ {
 						PutRequest: {
 							Item: {
 								"idx": 1,
@@ -97,10 +96,8 @@ function batchWrite(items){
 	*/
 
 	docClient.batchWrite(items, function (err, data) {
-		if (err)
-			console.log(JSON.stringify(err, null, 2));
-		else
-			console.log(JSON.stringify(data, null, 2));
+		if (err) console.log(err);
+		else console.log(data);
 	});
 
 }
@@ -108,44 +105,44 @@ function batchWrite(items){
 // delete table
 function deleteTable (){
 	var params = {
-		TableName: 'table_name',
+		TableName: TABLENAME,
 	};
 	dynamoDB.deleteTable(params, function(err, data) {
-		if (err)
-		console.log(err);
-		else
-		console.log(data);
+		if (err) console.log(err);
+		else console.log(data);
+
 	});
 }
 
 // scan table - get all items from a table
 function scan(){
 	var params = {
-		TableName: 'table_name',
+		TableName: TABLENAME,
 		Select: 'ALL_ATTRIBUTES'
 	};
 	dynamoDB.scan(params, function(err, data) {
-		if (err)
-		console.log(err);
-		else
-		console.log(data);
+		if (err) console.log(err);
+		else console.log(data);
+
 	});
 }
 
 // update an item
-var params = {
-    TableName:"todoTbl",
-    Key:{
-        "idx": 0
-    },
-    UpdateExpression: "set lastIdx = :n",
-    ExpressionAttributeValues:{
-        ":n":2
-    },
-    ReturnValues:"UPDATED_NEW"
-};
+function update(){
+	var params = {
+		TableName:"todoTbl",
+		Key:{
+			"idx": 0
+		},
+		UpdateExpression: "set lastIdx = :n",
+		ExpressionAttributeValues:{
+			":n":2
+		},
+		ReturnValues:"UPDATED_NEW"
+	};
 
-docClient.update(params, function(err, data) {
-    if (err) ppJson(err); // an error occurred
-    else ppJson(data); // successful response
-});
+	docClient.update(params, function(err, data) {
+			if (err) console.log(err);
+			else console.log(data);
+	});
+}

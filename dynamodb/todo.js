@@ -18,7 +18,6 @@
 	var dbConfig = {"endpoint": new AWS.Endpoint("http://localhost:8000")};
 
 	// provide your configurations
-	AWS.config.update({accessKeyId: 'foo', secretAccessKey: 'barn'});
 	AWS.config.update(dynDBConfig);
 	// initialize DynamoDB Object.
 	var dynamoDB = new AWS.DynamoDB(dbConfig);
@@ -97,6 +96,8 @@ function getIdx(callback){
 		}
 	};
 	docClient.get(params, function(err, data) {
+console.log('get data: ', data);
+console.log('get err: ', err);
 		callback(null, data.Item.lastIdx);
 	});
 }
@@ -109,7 +110,10 @@ function updateIdx(idx, callback){
 			lastIdx: idx + 1 
 		}
 	};
-	docClient.put(params, function(err, data) {
+	dynamoDB.putItem(params, function(err, data) {
+console.log('update data: ', data);
+console.log('update err: ', err);
+
 		cback(err, data);
 	});
 }
@@ -141,7 +145,7 @@ function getIdxAtomically(){
 
 var tasks=[];
 tasks.push(function(callback){ getIdx(callback);});
-tasks.push(function(callback){ updateIdx(idx, callback);});
+//tasks.push(function(callback){ updateIdx(idx, callback);});
 
 async.waterfall(tasks,
 	function(e,r){
