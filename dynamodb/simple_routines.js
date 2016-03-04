@@ -1,148 +1,166 @@
-//nodejs dynamoDB routines
-// requires aws-sdk
+var CFG = require('./dynamoDBConfig.js');
 
-//dynamoDB_local instantiation
-// requires async
-
-
-	var TABLENAME = 'todoTbl';
-	var dynDBConfig = {
-	"accessKeyId": "DummyKeyForLocaldynamoDB",
-	"secretAccessKey": "DummySecretAccessKeyForLocaldynamoDB",
-	"region": "us-east-1"
-	};
-
-	// requiring aws-sdk, async
-	var AWS = require('aws-sdk');
-	var async = require('async');
-
-	// For Local dynamoDB define endpoint will be "http://localhost:8000"
-	var dbConfig = {"endpoint": new AWS.Endpoint("http://localhost:8000")};
-
-	// provide your configurations
-	AWS.config.update(dynDBConfig);
-	// initialize dynamoDB Object.
-	var dynamoDB = new AWS.DynamoDB(dbConfig);
-	var docClient = new AWS.DynamoDB.DocumentClient();
+var TABLENAME = 'todoTbl';
 
 /* work area */
-listTables();
+console.log('\n------------------');
+updateAtomically();
+console.log('\n------------------');
 /* --------- */
 
 
-// create a table
+// ---------------------------------------------- createTable
 function createTable(){
 	//params format
 	var params = {
-		TableName : 'newTable',
+		TableName : TABLENAME,
 		KeySchema: [
-			{ AttributeName: "index_name", KeyType: "HASH" },  //Partition key
+			{ AttributeName: "index_name", KeyType: "HASH" },
 		],
 		AttributeDefinitions: [
-			{ AttributeName: "index_name", AttributeType: "N" }  //N = number
+			{ AttributeName: "index_name", AttributeType: "N" }
 		],
 		ProvisionedThroughput: {
-			ReadCapacityUnits: 1, //Read/Writes per second
+			ReadCapacityUnits: 1,
 			WriteCapacityUnits: 1
 		}
 	};
 
-	dynamoDB.createTable(params, function(err, data) {
-		if (err) console.log(err);
-		else console.log(data);
+	CFG.db.createTable(params, function(err, data) {
+		if (err) console.log(JSON.stringify(err,null,2));
+		else console.log(JSON.stringify(data,null,2));
 	});
 }
 
-// list tables
+// ---------------------------------------------- listTables
 function listTables(){
-	dynamoDB.listTables(function (err, data)
+	CFG.db.listTables(function (err, data)
 	{
-	 console.log('listTables',err,data);
+		if (err) console.log(JSON.stringify(err,null,2));
+		else console.log(JSON.stringify(data,null,2));
 	});
 }
 
-// add single item to the table
-function put(){
-	var params = {
-		TableName: 'todoTbl',
-		Item: { // a map of attribute name to AttributeValue
-
-			idx: 4,
-			todoItem: "mop the floor"
-		}
-	};
-	docClient.put(params, function(err, data) {
-			if (err) console.log(err);
-			else console.log(data);
-	});
-}
-
-// add multiple items to a table
-function batchWrite(items){
-	/* items format
-		items = {
-			RequestItems: {
-				TABLENAME: [ {
-						PutRequest: {
-							Item: {
-								"idx": 1,
-								"attribute_name": "value_to_add"
-							}
-						},...
-					}
-				]
-			}
-		};
-	*/
-
-	docClient.batchWrite(items, function (err, data) {
-		if (err) console.log(err);
-		else console.log(data);
-	});
-
-}
-
-// delete table
+// ---------------------------------------------- deleteTable
 function deleteTable (){
 	var params = {
 		TableName: TABLENAME,
 	};
-	dynamoDB.deleteTable(params, function(err, data) {
-		if (err) console.log(err);
-		else console.log(data);
+	CFG.db.deleteTable(params, function(err, data) {
+		if (err) console.log(JSON.stringify(err,null,2));
+		else console.log(JSON.stringify(data,null,2));
 
 	});
 }
 
-// scan table - get all items from a table
+// ---------------------------------------------- describeTable
+function describeTable (){
+	var params = {
+		TableName: TABLENAME,
+	};
+	CFG.db.describeTable(params, function(err, data) {
+		if (err) console.log(JSON.stringify(err,null,2));
+		else console.log(JSON.stringify(data,null,2));
+
+	});
+}
+
+// ---------------------------------------------- scan
 function scan(){
 	var params = {
 		TableName: TABLENAME,
 		Select: 'ALL_ATTRIBUTES'
 	};
-	dynamoDB.scan(params, function(err, data) {
-		if (err) console.log(err);
-		else console.log(data);
+	CFG.db.scan(params, function(err, data) {
+		if (err) console.log(JSON.stringify(err,null,2));
+		else console.log(JSON.stringify(data,null,2));
 
 	});
 }
 
-// update an item
+// --------------------------
+// docClient routines
+// --------------------------
+
+// ---------------------------------------------- put
+function put(){
+	var params = {
+		TableName: TABLENAME,
+		Item: {
+			index_name: 1,
+			todoItem: "mop the floor"
+		}
+	};
+	CFG.dc.put(params, function(err, data) {
+		if (err) console.log(JSON.stringify(err,null,2));
+		else console.log(JSON.stringify(data,null,2));
+	});
+}
+
+// ---------------------------------------------- update
 function update(){
 	var params = {
-		TableName:"todoTbl",
+		TableName:TABLENAME,
 		Key:{
-			"idx": 0
+			index_name: 1,
 		},
-		UpdateExpression: "set lastIdx = :n",
+		UpdateExpression: "set todoItem = :n",
 		ExpressionAttributeValues:{
-			":n":2
+			":n":"bake a pie"
 		},
 		ReturnValues:"UPDATED_NEW"
 	};
 
-	docClient.update(params, function(err, data) {
-			if (err) console.log(err);
-			else console.log(data);
+	CFG.dc.update(params, function(err, data) {
+		if (err) console.log(JSON.stringify(err,null,2));
+		else console.log(JSON.stringify(data,null,2));
+	});
+}
+
+// ---------------------------------------------- batchWrite
+function batchWrite(items){
+	var params = {
+		RequestItems: {
+			todoTbl: [
+				{
+					PutRequest: {
+						Item: {
+							idx: 11,
+							todoItem: '*** hate eight'
+						}
+					}
+				},
+				{
+					DeleteRequest: {
+						Key: {
+							idx: 1
+						}
+					}
+				}
+			]
+		}
+	};
+	CFG.dc.batchWrite(params, function(err, data) {
+		if (err) console.log(JSON.stringify(err,null,2));
+		else console.log(JSON.stringify(data,null,2));
+	});
+}
+
+function updateAtomically(){
+	var params = {
+		TableName: TABLENAME,
+		Key:{
+			idx: 0
+		},
+		UpdateExpression: "set lastIdx = lastIdx + :val",
+		ExpressionAttributeValues:{
+			":val":1
+		},
+		ReturnValues:"UPDATED_NEW"
+	};
+
+	CFG.dc.update(params, function(err, data) {
+		if (err) console.log(JSON.stringify(err,null,2));
+		else console.log(JSON.stringify(data,null,2));
 	});
 }

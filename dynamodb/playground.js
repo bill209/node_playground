@@ -1,14 +1,15 @@
 
 var CFG = require('./dynamoDBConfig.js');
 var async = require('async');
+// var ppJson = require('ppjson');
 
 var TABLENAME = 'todoTbl';
 var tasks=[];
 
 /* work area */
+//tasks.push(function(callback){ scan(callback);});
+tasks.push(function(callback){ updateAtomically(callback);});
 tasks.push(function(callback){ scan(callback);});
-// tasks.push(function(callback){ put(callback);});
-// tasks.push(function(callback){ scan(callback);});
 // tasks.push(function(callback){ listTables(callback);});
 // tasks.push(function(callback){ describeTable(callback);});
 
@@ -18,9 +19,7 @@ async.series(tasks,
 		if(e){
 			console.log('error: ',e);
 		} else{
-			for(var i=0;i<r.length;i++){
-				console.log(i + ': ', r[i]);
-			}
+			console.log(JSON.stringify(r,null,2));
 		}
 	}
 );
@@ -118,8 +117,8 @@ function put(callback){
 	var params = {
 		TableName: TABLENAME,
 		Item: {
-			idx: 6,
-			todoItem: "milk the beehive"
+			idx: 0,
+			lastIdx: 2
 		}
 	};
 	CFG.dc.put(params, function(err, data) {
@@ -154,21 +153,39 @@ function batchWrite(items){
 }
 
 // --------------------------------------------------- update an item
-function update(){
+function update(callback){
 	var params = {
-		TableName:"todoTbl",
+		TableName: TABLENAME,
 		Key:{
 			"idx": 0
 		},
 		UpdateExpression: "set lastIdx = :n",
 		ExpressionAttributeValues:{
-			":n":2
+			":n":4
 		},
 		ReturnValues:"UPDATED_NEW"
 	};
 
 	CFG.dc.update(params, function(err, data) {
-			if (err) console.log(err);
-			else console.log(data);
+		if (err) callback(err, data);
+		else callback(null, data);	});
+}
+
+function updateAtomically(callback){
+	var params = {
+		TableName:"todoTbl",
+		Key:{
+			"idx": 0
+		},
+		UpdateExpression: "set lastIdx = lastIdx + :val",
+		ExpressionAttributeValues:{
+			":val":1
+		},
+		ReturnValues:"UPDATED_NEW"
+	};
+
+	CFG.dc.update(params, function(err, data) {
+		if (err) callback(err, data);
+		else callback(null, data);
 	});
 }
