@@ -1,5 +1,8 @@
 Archive*.zip
 
+# dynamodb
+shared-local-instance.db
+
 #################### OS X ####################
 .DS_Store
 .AppleDouble
