@@ -1,27 +1,27 @@
+/*
+	loads jokes into the dadJokes db
+	input: dadjokes.json
+	db: dynamodb:dadJokes
+
+	to re-initialize db - run initJokesDB.js
+
+	author: bill rowland
+*/
 (function(){
 
-	var CFG = require('./dynamoDBConfig.js');
+	var CFG = require('./dynamoDBConfig.js');	// initialize the database
 
-	var async = require('async');
-	var FS = require('fs');
-	var Q = require('q');
-	var TABLENAME = 'dadJokes';
-	var FILENAME = 'data/dadjokes.json';
-	var tasks = [];
+	var FS = require('fs');						// reading the json file
+	var Q = require('q');						// handling promises
+	var TABLENAME = 'dadJokes';					// dynamo DB table
+	var FILENAME = 'data/dadjokes.json';		// file containing the jokes
 
-Object.size = function(obj) {
-    var size = 0, key;
-    for (key in obj) {
-        if (obj.hasOwnProperty(key)) size++;
-    }
-    return size;
-};
-
-
-console.log('\n--------------------------\n');
+	// get the jokes from the json file
 	readFile(FILENAME)
 		.then(function(data){
+			// convert the jokes into a format consumable by batchwrite
 			jokes = convertJson(JSON.parse(data));
+			// add jokes to dynamodb using batchwrite
 			addJokes(jokes)
 			.then(function(res){
 				console.log("result: ",res);
@@ -34,37 +34,21 @@ console.log('\n--------------------------\n');
 		})
 	});
 
-	function addJokes(jokes){
+	// get the jokes from the json file
+	function readFile(fname){
 		var deferred = Q.defer();
-		var UnprocessedItems = jokes;
-//console.log('UI len::::::', Object.keys(UnprocessedItems).length);
-console.log('**: ',Object.size(UnprocessedItems));
 
- 		console.log(JSON.stringify(UnprocessedItems,null,2));
- 		ctr = 0;
-		do {
-			ctr ++;	// loop through maximum 5 times
-			CFG.dc.batchWrite(UnprocessedItems, function(err, data) {
-				if(err) {
-					deferred.reject({ 'error' : 'batchwrite failed' });
-				} else {
-					jokes = UnprocessedItems;
-
-console.log('jokes len: ', Object.size(jokes));
-console.log('jokes: ', jokes);
-				}
-			});
-		}
-		while (!err && ctr < 5 && false)
-
-		if(err){
-			deferred.reject({ 'error': 'batchwrite failed' });
-		} else {
-			deferred.resolve({'success' : true })
-		}
+		FS.readFile(fname, 'utf8', function (error, text) {
+			if (error) {
+				deferred.reject(error);
+			} else {
+				deferred.resolve(text);
+			}
+		});
 		return deferred.promise;
 	}
 
+	// convert the jokes into a format consumable by batchwrite
 	function convertJson(d){
 		var deferred = Q.defer();
 		var batchJson = {};
@@ -82,21 +66,32 @@ console.log('jokes: ', jokes);
 		return batchJson;
 	}
 
-	function readFile(fname){
+	// add jokes to dynamodb using batchwrite
+	function addJokes(jokes){
 		var deferred = Q.defer();
+		var UnprocessedItems = jokes;
 
-		FS.readFile(fname, 'utf8', function (error, text) {
-			if (error) {
-				deferred.reject(error);
-			} else {
-				deferred.resolve(text);
-			}
-		});
+ 		console.log(JSON.stringify(UnprocessedItems,null,2));
+ 		ctr = 0;
+		do {
+			ctr ++;	// loop through maximum 5 times
+			CFG.dc.batchWrite(jokes, function(err, data) {
+				if(!err) {
+					jokes = data.UnprocessedItems;
+				}
+			});
+		}
+		// break on err, no more jokes to process, or tried 5 times
+		while (!err && Object.keys(jokes).length > 0 && ctr < 5 && false)
+
+		if(err){
+			deferred.reject(err);
+		} else if (ctr > 4) {
+			deferred.reject({ 'error': 'batchwrite failed due to excessive attempts' });
+		} else {
+			deferred.resolve({'success' : true })
+		}
 		return deferred.promise;
 	}
-
-
-
-
 
 })();

@@ -11,7 +11,7 @@ var tasks=[];
 //tasks.push(function(callback){ updateAtomically(callback);});
 tasks.push(function(callback){ scan(callback);});
 // tasks.push(function(callback){ listTables(callback);});
-// tasks.push(function(callback){ describeTable(callback);});
+tasks.push(function(callback){ describeTable(callback);});
 
 
 async.series(tasks,

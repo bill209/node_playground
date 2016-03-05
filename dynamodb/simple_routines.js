@@ -1,10 +1,10 @@
 var CFG = require('./dynamoDBConfig.js');
 
-var TABLENAME = 'todoTbl';
+var TABLENAME = 'dadJokes';
 
 /* work area */
 console.log('\n------------------');
-listTables();
+get();
 console.log('\n------------------');
 /* --------- */
 
@@ -81,6 +81,20 @@ function scan(){
 // --------------------------
 // docClient routines
 // --------------------------
+
+// ---------------------------------------------- get
+function get(){
+	var params = {
+		TableName: TABLENAME,
+		Key: {
+			idx: 4
+		}
+	};
+	CFG.dc.get(params, function(err, data) {
+		if (err) console.log(JSON.stringify(err,null,2));
+		else console.log(JSON.stringify(data,null,2));
+	});
+}
 
 // ---------------------------------------------- put
 function put(){
