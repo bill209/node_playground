@@ -1,0 +1,8 @@
+{ "jokes" : [
+	{ "joke" : "joke1" },
+	{ "joke" : "joke2" },
+	{ "joke" : "joke3" },
+	{ "joke" : "joke4" },
+	{ "joke" : "joke5" },
+	{ "joke" : "joke6" }
+] }

@@ -4,7 +4,7 @@ var TABLENAME = 'todoTbl';
 
 /* work area */
 console.log('\n------------------');
-updateAtomically();
+listTables();
 console.log('\n------------------');
 /* --------- */
 

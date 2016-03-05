@@ -3,12 +3,12 @@ var CFG = require('./dynamoDBConfig.js');
 var async = require('async');
 // var ppJson = require('ppjson');
 
-var TABLENAME = 'todoTbl';
+var TABLENAME = 'dadJokes';
 var tasks=[];
 
 /* work area */
 //tasks.push(function(callback){ scan(callback);});
-tasks.push(function(callback){ updateAtomically(callback);});
+//tasks.push(function(callback){ updateAtomically(callback);});
 tasks.push(function(callback){ scan(callback);});
 // tasks.push(function(callback){ listTables(callback);});
 // tasks.push(function(callback){ describeTable(callback);});
