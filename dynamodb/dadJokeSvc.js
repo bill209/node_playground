@@ -1,4 +1,7 @@
 /*
+	dadJokeSvc.js
+	called from Alexa Skills app alexaDadJoke
+
 	author: bill rowland
 */
 (function(){
@@ -12,11 +15,11 @@
 	module.exports.getRandomDadJoke = function(){
 		var deferred = Q.defer();
 
-		getItemCount()
+		getItemCount()							// cnt of jokes in db
 			.then(function(numberOfJokes){
 				// select a random joke
 				var x = Math.floor((Math.random() * numberOfJokes) + 1);
-				getDadJoke(x)
+				getDadJoke(x)					// get the joke
 					.then(function(joke){
 						deferred.resolve(joke);
 					})
@@ -24,6 +27,8 @@
 		return deferred.promise;
 	}
 
+	// determine how many records in the table in order
+	// to select a random one
 	function getItemCount(){
 		var deferred = Q.defer();
 
@@ -39,8 +44,8 @@
 	}
 
 
-
-	// ---------------------------------------------- get
+	// retrieve a dad joke from the db
+	// jokeIdx: index of joke to retrieve
 	var getDadJoke = function(jokeIdx) {
 		var deferred = Q.defer();
 

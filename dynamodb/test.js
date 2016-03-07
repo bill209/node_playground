@@ -1,13 +1,13 @@
 var Q = require('Q');
 
 
-var grdj = function(){
+var main = function(){
 	var deferred = Q.defer();
-	var x = 'start:';
+	var x = 'main :';
 
-	getItemCount(x)
+	func1(x)
 		.then(function(y){
-			getDadJoke(y)
+			func2(y)
 			.then(function(z){
 				deferred.resolve(z);
 			})
@@ -18,31 +18,31 @@ var grdj = function(){
 
 
 
-var getItemCount = function(x) {
+var func1 = function(x) {
 	var deferred = Q.defer();
 	Q.delay(200)
 	 .done(function() {
-		console.log("(resolving getItemCount promise)");
-		deferred.resolve(x + ':getItemCount:');
+		console.log("(resolving func1 promise)");
+		deferred.resolve(x + ': func1 :');
 	 });
 
 	return deferred.promise;
 }
 
-var getDadJoke = function(x) {
+var func2 = function(x) {
 	var deferred = Q.defer();
 
 	Q.delay(200)
 	 .done(function() {
-		console.log("(resolving getDadJoke promise)");
-		deferred.resolve(x + ':getDadJoke:');
+		console.log("(resolving func2 promise)");
+		deferred.resolve(x + ': func2 :');
 	 });
 
 	return deferred.promise;
 }
 
 console.log('\n-----go-----\n');
-grdj()
+main()
 	.then(function(result){
 		console.log('result: ',result);
 	})
