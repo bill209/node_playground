@@ -8,8 +8,8 @@
 	var INDEXNAME = 'idx';
 	var tasks = [];
 
-	tasks.push(function(callback){ deleteTable(callback)});
-	tasks.push(function(callback){ createTable(callback)});
+//	tasks.push(function(callback){ deleteTable(callback)});
+//	tasks.push(function(callback){ createTable(callback)});
 	tasks.push(function(callback){ listTables(callback)});
 
 	console.log('\n--------------------------\n');

@@ -4,7 +4,7 @@ var TABLENAME = 'dadJokes';
 
 /* work area */
 console.log('\n------------------');
-get();
+scan();
 console.log('\n------------------');
 /* --------- */
 
